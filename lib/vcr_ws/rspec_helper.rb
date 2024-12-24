@@ -1,6 +1,6 @@
 # RSpec Integration
 module VcrWs
-  module SpecHelper
+  module RspecHelper
     def start_ws_vcr_server!(file_path)
       @actor_ws = VcrWs::ActorWS.new(file_path)
       @actor_ws.start!

@@ -13,3 +13,7 @@ gem "rubocop", "~> 1.21"
 
 gem "vcr", "~> 6.3"
 gem "faye-websocket", "~> 0.11.3"
+
+gem "pry", "~> 0.15.0"
+
+gem "singleton", "~> 0.3.0"

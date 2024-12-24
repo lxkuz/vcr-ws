@@ -4,11 +4,19 @@ require 'yaml'
 module VcrWs
   class Replayer
     def initialize(file_path)
-      @replay_data = YAML.load_file(file_path)
+      @file_path = file_path
+      @replay_data = nil
       @start_time = nil
     end
 
+    def load
+      if File.exist?(@file_path)
+        @replay_data = YAML.load_file(@file_path)
+      end
+    end
+
     def next_event
+      load if @replay_data.nil?
       return nil if @replay_data.empty?
 
       event = @replay_data.first

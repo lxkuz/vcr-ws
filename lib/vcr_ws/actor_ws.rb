@@ -13,9 +13,16 @@ module VcrWs
     def start!
       Thread.new do
         EM.run do
-          EM.start_server('0.0.0.0', 8080, ConnectionHandler, @replayer, @connections)
+          EM.start_server(
+            VcrWs::Config.instance.test_ws_address,
+            VcrWs::Config.instance.test_ws_port,
+            ConnectionHandler,
+            @replayer,
+            @connections
+          )
         end
-      end
+      end.run
+      sleep 2
     end
 
     def stop!
