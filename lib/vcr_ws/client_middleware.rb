@@ -34,7 +34,7 @@ module VcrWs
   def self.enable_recorder!(recorder_file)
     Faye::WebSocket::Client.prepend(Module.new do
       def initialize(url, protocols = nil, options = {})
-        @recorder = WebSocketVCR::Recorder.new
+        @recorder = WebSocketVCR::Recorder.new(recorder_file)
         super
         @middleware = WebSocketVCR::Middleware::RecorderMiddleware.new(self, @recorder)
       end
