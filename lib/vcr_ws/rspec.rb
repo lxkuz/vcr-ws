@@ -12,7 +12,6 @@ module VcrWs
         file_path = example.metadata[:vcr_ws]
         raise 'vcr_ws file path is required!' unless file_path
 
-        binding.pry
         full_path = File.join(VcrWs::Config.instance.file_base_path, file_path)
         full_path = full_path + '.yml' unless File.extname(full_path) == '.yml'
         if File.exist?(full_path)

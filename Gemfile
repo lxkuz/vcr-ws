@@ -17,3 +17,5 @@ gem "faye-websocket", "~> 0.11.3"
 gem "pry", "~> 0.15.0"
 
 gem "singleton", "~> 0.3.0"
+
+gem "em-websocket", "~> 0.5.3"

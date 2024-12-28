@@ -9,7 +9,8 @@ module VcrWs
         file_base_path: "./spec/fixtures/vcr_ws",
         current_file_path: nil,
         test_ws_port: 8080,
-        test_ws_address: '0.0.0.0'
+        test_ws_address: '0.0.0.0',
+        vcr_enabled: false
       }
     end
 
@@ -51,6 +52,7 @@ module VcrWs
     :file_base_path,
     :current_file_path,
     :test_ws_port,
-    :test_ws_address
+    :test_ws_address,
+    :vcr_enabled
   )
 end

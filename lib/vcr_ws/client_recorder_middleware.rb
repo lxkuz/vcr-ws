@@ -1,5 +1,7 @@
+# frozen_string_literal: true
+
 module VcrWs
-  class ClientMiddleware
+  class ClientRecorderMiddleware
     def self.enable_recorder!(recorder_file)
       VcrWs::Config.instance.current_file_path = recorder_file
 
@@ -8,7 +10,7 @@ module VcrWs
           def initialize(url, protocols = nil, options = {})
             @recorder = VcrWs::Recorder.new(VcrWs::Config.instance.current_file_path)
             super
-            @middleware = VcrWs::ClientMiddleware.new(self, @recorder)
+            @middleware = VcrWs::ClientRecorderMiddleware.new(self, @recorder)
           end
 
           def on(event, &block)

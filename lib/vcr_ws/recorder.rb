@@ -14,7 +14,13 @@ module VcrWs
     def record(event, data)
       line = { timestamp: Time.now.to_f, event: event }
       line[:data] = data if data
-      File.open(@recorder_file, 'a') { |f| f.write(YAML.dump(line)) }
+      full_data = if File.exists?(@recorder_file)
+        YAML.load_file(@recorder_file, symbolize_names: true)
+      else
+        []
+      end
+      full_data.push(line)
+      File.open(@recorder_file, 'w') { |f| f.write(YAML.dump(full_data)) }
     end
   end
 end
