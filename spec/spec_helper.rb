@@ -30,41 +30,51 @@ end
 
 def start_echo_server(host, port)
   thread = Thread.new(host, port) do |host, port|
-    EM.run do
-      puts "Starting WebSocket server on ws://#{host}:#{port}"
+    Thread.handle_interrupt(RuntimeError => :never) {
+      begin
+        # You can write resource allocation code safely.
+        Thread.handle_interrupt(RuntimeError => :immediate) {
+          EM.run do
+            puts "Starting WebSocket server on ws://#{host}:#{port}"
 
-      EM::WebSocket.start(host: host, port: port) do |ws|
-        ws.onopen do
-          puts "Client connected"
-          ws.send("hello")
-        end
+            EM::WebSocket.start(host: host, port: port) do |ws|
+              ws.onopen do
+                puts "Client connected"
+                ws.send("hello")
+              end
 
-        ws.onmessage do |message|
-          puts "Received message: #{message}"
+              ws.onmessage do |message|
+                puts "Received message: #{message}"
 
-          if message == 'stop'
-            puts 'STOPING'
-            ws.close
-            EM.stop
-          else
-            ws.send(message)
+                if message == 'stop'
+                  puts 'STOPING'
+                  ws.close
+                  EM.stop
+                else
+                  ws.send(message)
 
-            EM.add_timer(1) do
-              ws.send("#{message} 2")
+                  EM.add_timer(1) do
+                    ws.send("#{message} 2")
+                  end
+                end
+              end
+
+              ws.onclose do
+                puts "Client disconnected"
+              end
+
+              ws.onerror do |error|
+                puts "Error: #{error.message}"
+                puts error.backtrace
+              end
             end
           end
-        end
 
-        ws.onclose do
-          puts "Client disconnected"
-        end
-
-        ws.onerror do |error|
-          puts "Error: #{error.message}"
-          puts error.backtrace
-        end
+        }
+      ensure
+        EM.stop if EM.reactor_running?
       end
-    end
+    }
   end.run
   thread
 end
