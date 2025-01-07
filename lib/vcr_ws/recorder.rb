@@ -12,7 +12,7 @@ module VcrWs
     end
 
     def record(event, data)
-      line = { timestamp: Time.now.to_f, event: event }
+      line = { timestamp: Time.now.to_i, event: event.to_s }
       line[:data] = data if data
       full_data = if File.file?(@recorder_file)
         YAML.load_file(@recorder_file, symbolize_names: true)

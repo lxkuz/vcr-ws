@@ -32,8 +32,8 @@ RSpec.describe 'Echo WebSocket Server' do
   end
 
   before(:all) do
-    new_time = Time.local(2025, 1, 1, 1, 0, 0)
-    Timecop.freeze(new_time)
+    time = Time.parse('2025-01-01 1:0:00 +0000')
+    Timecop.travel(time)
   end
 
   after(:all) do
