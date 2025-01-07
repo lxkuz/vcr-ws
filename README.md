@@ -1,28 +1,66 @@
 # VcrWs
 
-TODO: Delete this and the text below, and describe your gem
+This gem is designed for testing WebSocket (WS) clients. It is inspired by the VCR gem, which is widely used for REST API testing.
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/vcr_ws`. To experiment with that code, run `bin/console` for an interactive prompt.
+When you run the first RSpec test, the gem generates a YAML file containing all sent and received WebSocket data. On subsequent RSpec runs, it starts a mock WebSocket server that uses this YAML file and intercepts the WebSocket client's calls.
+
+With this setup, you no longer need external WebSocket connections for unit testing.
+
+**Warning**:
+
+It works for `faye-websocket` WS client only.
 
 ## Installation
 
-TODO: Replace `UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG` with your gem name right after releasing it to RubyGems.org. Please do not do it earlier due to security reasons. Alternatively, replace this section with instructions to install your gem from git if you don't plan to release to RubyGems.org.
-
-Install the gem and add to the application's Gemfile by executing:
-
 ```bash
-bundle add UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
-```
-
-If bundler is not being used to manage dependencies, install the gem by executing:
-
-```bash
-gem install UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+bundle add vcr_ws
 ```
 
 ## Usage
 
-TODO: Write usage instructions here
+1. Configure your VCR WS:
+
+```ruby
+# spec_helper.rb
+
+require "vcr_ws"
+
+config = VcrWs::Config.instance
+config.configure(
+  # folder for VCR records
+  file_base_path: "spec/fixtures",
+
+  # VCR WS server host
+  test_ws_address: "0.0.0.0",
+
+  # VCR WS server port
+  test_ws_port: 8080
+)
+
+RSpec.configure do |config|
+  VcrWs::Rspec.configure(config)
+end
+
+```
+
+2. Use it in your tests:
+
+```ruby
+
+# some_your_spec.rb
+
+it 'your client should work', vcr_ws: 'test_sample' do
+  # your client test code is here
+  # first time it will call original WS server
+  # after second call it uses `spec/fixtures/test_sample.yml` recorded data in test
+end
+
+```
+
+Hint:
+
+* Your websocket client should be an instance of `Faye::WebSocket::Client`
+* That's a good approach to test your client in working in separate Thread and saving logs in array data. See example `spec/general_spec.rb`
 
 ## Development
 
