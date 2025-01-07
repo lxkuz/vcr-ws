@@ -13,3 +13,4 @@ Style/FrozenStringLiteralComment:
   Exclude:
     - lib/vcr_ws/actor_ws.rb
     - spec/spec_helper.rb
+    - spec/vcr_ws/recording_spec.rb
