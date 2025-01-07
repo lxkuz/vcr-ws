@@ -5,6 +5,32 @@ require 'timecop'
 
 RSpec.describe 'Echo WebSocket Server' do
 
+  def start_client_ws
+    Thread.new do
+      EM.run do
+        client = Faye::WebSocket::Client.new("ws://#{host}:#{echo_port}")
+
+        client.on :open do
+          logger.info('connection opened')
+          client.send('test')
+        end
+
+        client.on :message do |event|
+          logger.info("message: #{event.data}")
+        end
+
+        client.on :close do
+          logger.info("connection closed")
+          EM.stop
+        end
+
+        sleep 3
+        client.send('stop')
+      end
+    end.run
+    sleep 6
+  end
+
   before(:all) do
     new_time = Time.local(2025, 1, 1, 1, 0, 0)
     Timecop.freeze(new_time)
@@ -30,6 +56,10 @@ RSpec.describe 'Echo WebSocket Server' do
     TestLogger.new
   end
 
+  let(:sample_file_path) do
+    'spec/fixtures/sample.yml'
+  end
+
   before(:each) do
     VcrWs::Config.instance.test_ws_port = vcr_port
     # File.remove()
@@ -50,83 +80,43 @@ RSpec.describe 'Echo WebSocket Server' do
     ]
   end
 
-  before do
-
-  end
-
   context 'when work without VCR' do
-  it 'works as WS echo server properly' do
-    Thread.new do
-      EM.run do
-        client = Faye::WebSocket::Client.new("ws://#{host}:#{echo_port}")
-
-        client.on :open do
-          logger.info('connection opened')
-          client.send('test')
-        end
-
-        client.on :message do |event|
-          logger.info("message: #{event.data}")
-        end
-
-        client.on :close do
-          logger.info("connection closed")
-          EM.stop
-        end
-
-        sleep 3
-        client.send('stop')
-      end
-    end.run
-    sleep 6
-    expect(logger.logs).to eql(expected_logs)
-  end
-end
-
-context 'when VCR enabled' do
-  let(:file_path) do
-    'spec/fixtures/recorder.yml'
+    it 'works as WS echo server properly' do
+      start_client_ws
+      expect(logger.logs).to eql(expected_logs)
+    end
   end
 
-  after do
-    File.delete(file_path) if File.file?(file_path)
+  # ISSUE: 2 vcr_ws processes are failing cause of
+  # client middleware #@client.method(:on).super_method.call(event)
+  # `method': stack level too deep error
+  context 'when VCR enabled' do
+    let(:file_path) do
+      'spec/fixtures/recorder.yml'
+    end
+
+    after do
+      File.delete(file_path) if File.file?(file_path)
+    end
+
+    it 'creates VCR recorded file', vcr_ws: 'recorder' do
+      start_client_ws
+      expect(File.file?(file_path)).to be_truthy
+      expect(YAML.load_file(file_path)).to eql(YAML.load_file(sample_file_path))
+    end
   end
-  it 'creates VCR recorded file', vcr_ws: 'recorder' do
-    Thread.new do
-      EM.run do
-        client = Faye::WebSocket::Client.new("ws://#{host}:#{echo_port}")
 
-        client.on :open do
-          logger.info('connection opened')
-          client.send('test')
-        end
+  # ISSUE: Figure out why it is falling
+  # /Users/lxkuz/projects/vcr_ws/lib/vcr_ws/actor_ws.rb:26:in `block (4 levels) in start!':
+  # Invalid HTTP header: Could not parse data entirely (0 != 517) (EventMachine::WebSocket::HandshakeError)
+  xcontext 'when VCR enabled and we try to use it' do
+    let(:file_path) do
+      'spec/fixtures/sample.yml'
+    end
 
-        client.on :message do |event|
-          logger.info("message: #{event.data}")
-        end
-
-        client.on :close do
-          logger.info("connection closed")
-          EM.stop
-        end
-
-        sleep 3
-        client.send('stop')
-      end
-    end.run
-    sleep 6
-    expect(File.file?(file_path)).to be_truthy
-    expect(YAML.load_file(file_path)).to eql(
-      [
-        {:event => :open, :timestamp => 1735675200.0},
-        {:data => "test", :event => "send", :timestamp => 1735675200.0},
-        {:data => "hello", :event => :message, :timestamp => 1735675200.0},
-        {:data => "test", :event => :message, :timestamp => 1735675200.0},
-        {:data => "test 2", :event => :message, :timestamp => 1735675200.0},
-        {:data => "stop", :event => "send", :timestamp => 1735675200.0},
-        {:event => :close, :timestamp => 1735675200.0}
-      ]
-    )
+    it 'uses pre-recorded VCR file', vcr_ws: 'sample' do
+      start_client_ws
+      expect(logger.logs).to eql(expected_logs)
+    end
   end
-end
 end
