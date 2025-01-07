@@ -2,12 +2,15 @@ require "vcr_ws"
 require 'eventmachine'
 require 'em-websocket'
 
-# config = VcrWs::Config.instance
-# config.configure({})
+config = VcrWs::Config.instance
+config.configure(
+  file_base_path: 'spec/fixtures',
+  test_ws_address: '0.0.0.0'
+)
 
-# RSpec.configure do |config|
-#   VcrWs::Rspec.configure(config)
-# end
+RSpec.configure do |config|
+  VcrWs::Rspec.configure(config)
+end
 
 class TestLogger
   attr_reader :logs
