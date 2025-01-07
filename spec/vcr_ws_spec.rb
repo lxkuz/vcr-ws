@@ -1,4 +1,4 @@
-
+# frozen_string_literal: true
 
 RSpec.describe VcrWs do
   it "has a version number" do

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # RSpec Integration
 module VcrWs
   module RspecHelper
@@ -9,7 +11,7 @@ module VcrWs
     end
 
     def stop_ws_vcr_server!
-      @actor_ws.stop! if @actor_ws
+      @actor_ws&.stop!
       VcrWs::Config.instance.vcr_enabled = false
     end
 
@@ -18,5 +20,3 @@ module VcrWs
     end
   end
 end
-
-

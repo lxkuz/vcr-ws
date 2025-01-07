@@ -1,10 +1,10 @@
+# frozen_string_literal: true
 
-
-require 'faye/websocket'
-require 'eventmachine'
-require 'em-websocket'
-require 'yaml'
-require 'rspec'
+require "faye/websocket"
+require "eventmachine"
+require "em-websocket"
+require "yaml"
+require "rspec"
 
 require_relative "vcr_ws/version"
 require_relative "vcr_ws/config"

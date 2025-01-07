@@ -1,6 +1,6 @@
+# frozen_string_literal: true
 
-
-require 'fileutils'
+require "fileutils"
 
 module VcrWs
   class Recorder
@@ -15,12 +15,12 @@ module VcrWs
       line = { timestamp: Time.now.to_i, event: event.to_s }
       line[:data] = data if data
       full_data = if File.file?(@recorder_file)
-        YAML.load_file(@recorder_file, symbolize_names: true)
-      else
-        []
-      end
+                    YAML.load_file(@recorder_file, symbolize_names: true)
+                  else
+                    []
+                  end
       full_data.push(line)
-      File.open(@recorder_file, 'w') { |f| f.write(YAML.dump(full_data)) }
+      File.open(@recorder_file, "w") { |f| f.write(YAML.dump(full_data)) }
     end
   end
 end

@@ -1,7 +1,9 @@
-require 'rspec'
-require 'vcr_ws/config'
-require 'vcr_ws/rspec_helper'
-require 'pry'
+# frozen_string_literal: true
+
+require "rspec"
+require "vcr_ws/config"
+require "vcr_ws/rspec_helper"
+require "pry"
 
 module VcrWs
   class Rspec
@@ -10,10 +12,10 @@ module VcrWs
 
       rspec_config.before(:each, vcr_ws: true) do |example|
         file_path = example.metadata[:vcr_ws]
-        raise 'vcr_ws file path is required!' unless file_path
+        raise "vcr_ws file path is required!" unless file_path
 
         full_path = File.join(VcrWs::Config.instance.file_base_path, file_path)
-        full_path = full_path + '.yml' unless File.extname(full_path) == '.yml'
+        full_path += ".yml" unless File.extname(full_path) == ".yml"
         if File.exist?(full_path)
           start_ws_vcr_server!(full_path)
         else
@@ -27,4 +29,3 @@ module VcrWs
     end
   end
 end
-

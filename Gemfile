@@ -1,4 +1,4 @@
-
+# frozen_string_literal: true
 
 source "https://rubygems.org"
 
@@ -12,8 +12,8 @@ gem "rspec", "~> 3.0"
 gem "rubocop", "~> 1.21"
 gem "timecop", "~> 0.9"
 
-gem "vcr", "~> 6.3"
 gem "faye-websocket", "~> 0.11.3"
+gem "vcr", "~> 6.3"
 
 gem "pry", "~> 0.15.0"
 

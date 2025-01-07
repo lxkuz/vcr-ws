@@ -1,18 +1,19 @@
-require 'rspec'
-require 'faye/websocket'
-require 'eventmachine'
-require 'timecop'
+# frozen_string_literal: true
 
-RSpec.describe 'Echo WebSocket Server' do
+require "rspec"
+require "faye/websocket"
+require "eventmachine"
+require "timecop"
 
+RSpec.describe "Echo WebSocket Server" do
   def start_client_ws
     Thread.new do
       EM.run do
         client = Faye::WebSocket::Client.new("ws://#{host}:#{echo_port}")
 
         client.on :open do
-          logger.info('connection opened')
-          client.send('test')
+          logger.info("connection opened")
+          client.send("test")
         end
 
         client.on :message do |event|
@@ -25,14 +26,14 @@ RSpec.describe 'Echo WebSocket Server' do
         end
 
         sleep 3
-        client.send('stop')
+        client.send("stop")
       end
     end.run
     sleep 6
   end
 
   before(:all) do
-    time = Time.parse('2025-01-01 1:0:00 +0000')
+    time = Time.parse("2025-01-01 1:0:00 +0000")
     Timecop.travel(time)
   end
 
@@ -41,7 +42,7 @@ RSpec.describe 'Echo WebSocket Server' do
   end
 
   let(:host) do
-    '0.0.0.0'
+    "0.0.0.0"
   end
 
   let(:echo_port) do
@@ -57,7 +58,7 @@ RSpec.describe 'Echo WebSocket Server' do
   end
 
   let(:sample_file_path) do
-    'spec/fixtures/sample.yml'
+    "spec/fixtures/sample.yml"
   end
 
   before(:each) do
@@ -72,16 +73,16 @@ RSpec.describe 'Echo WebSocket Server' do
 
   let(:expected_logs) do
     [
-      [:info, 'connection opened'],
-      [:info, 'message: hello'],
-      [:info, 'message: test'],
-      [:info, 'message: test 2'],
-      [:info, 'connection closed']
+      [:info, "connection opened"],
+      [:info, "message: hello"],
+      [:info, "message: test"],
+      [:info, "message: test 2"],
+      [:info, "connection closed"]
     ]
   end
 
-  context 'when work without VCR' do
-    it 'works as WS echo server properly' do
+  context "when work without VCR" do
+    it "works as WS echo server properly" do
       start_client_ws
       expect(logger.logs).to eql(expected_logs)
     end
@@ -90,16 +91,16 @@ RSpec.describe 'Echo WebSocket Server' do
   # ISSUE: 2 vcr_ws processes are failing cause of
   # client middleware #@client.method(:on).super_method.call(event)
   # `method': stack level too deep error
-  context 'when VCR enabled' do
+  context "when VCR enabled" do
     let(:file_path) do
-      'spec/fixtures/recorder.yml'
+      "spec/fixtures/recorder.yml"
     end
 
     after do
       File.delete(file_path) if File.file?(file_path)
     end
 
-    it 'creates VCR recorded file', vcr_ws: 'recorder' do
+    it "creates VCR recorded file", vcr_ws: "recorder" do
       start_client_ws
       expect(File.file?(file_path)).to be_truthy
       expect(YAML.load_file(file_path)).to eql(YAML.load_file(sample_file_path))
@@ -109,12 +110,12 @@ RSpec.describe 'Echo WebSocket Server' do
   # ISSUE: Figure out why it is falling
   # /Users/lxkuz/projects/vcr_ws/lib/vcr_ws/actor_ws.rb:26:in `block (4 levels) in start!':
   # Invalid HTTP header: Could not parse data entirely (0 != 517) (EventMachine::WebSocket::HandshakeError)
-  xcontext 'when VCR enabled and we try to use it' do
+  xcontext "when VCR enabled and we try to use it" do
     let(:file_path) do
-      'spec/fixtures/sample.yml'
+      "spec/fixtures/sample.yml"
     end
 
-    it 'uses pre-recorded VCR file', vcr_ws: 'sample' do
+    it "uses pre-recorded VCR file", vcr_ws: "sample" do
       start_client_ws
       expect(logger.logs).to eql(expected_logs)
     end

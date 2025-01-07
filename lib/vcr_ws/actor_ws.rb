@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module VcrWs
   class ActorWS
     def initialize(file_path)
@@ -53,19 +55,20 @@ module VcrWs
       current_event = @events[@event_index]
 
       if current_event[:event] == :send
-        if message == current_event[:data]
-          puts "Message matches expected data."
-          @event_index += 1
-          process_next_event(ws)
-        else
-          raise VcrWs::Error.new("Mismatch error: Expected #{current_event[:data]}, got #{message}")
+        unless message == current_event[:data]
+          raise VcrWs::Error, "Mismatch error: Expected #{current_event[:data]}, got #{message}"
         end
+
+        puts "Message matches expected data."
+        @event_index += 1
+        process_next_event(ws)
+
       else
         puts "Unexpected message received: #{message}"
       end
     end
 
-    def handle_close(ws)
+    def handle_close(_ws)
       puts "Client disconnected"
     end
 
@@ -74,7 +77,7 @@ module VcrWs
 
       current_event = @events[@event_index]
       puts @events.inspect
-      puts 'current_event'
+      puts "current_event"
       puts current_event.inspect
 
       delay = calculate_delay(current_event[:timestamp])

@@ -1,4 +1,4 @@
-
+# frozen_string_literal: true
 
 module VcrWs
   class ClientRecorderMiddleware
@@ -34,20 +34,16 @@ module VcrWs
     def on(event, block)
       @client.method(:on).super_method.call(event) do |data|
         value = nil
-        if data.respond_to?(:data)
-          value = data.data
-        end
+        value = data.data if data.respond_to?(:data)
         @recorder.record(event, value)
-        block.call(data) if block
+        block&.call(data)
       end
     end
 
     def send_message(message)
-      @recorder.record('send', message)
+      @recorder.record("send", message)
       @client.method(:send).super_method.call(message)
     end
-
-    private
 
     # def format_data(event, data)
     #   case event
