@@ -8,3 +8,8 @@ Style/StringLiterals:
 
 Style/StringLiteralsInInterpolation:
   EnforcedStyle: double_quotes
+
+Style/FrozenStringLiteralComment:
+  Exclude:
+    - lib/vcr_ws/actor_ws.rb
+    - spec/spec_helper.rb

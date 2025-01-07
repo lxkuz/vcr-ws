@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 require "vcr_ws"
 require "eventmachine"
 require "em-websocket"
