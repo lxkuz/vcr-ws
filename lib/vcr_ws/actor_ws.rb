@@ -6,29 +6,35 @@ module VcrWs
     end
 
     def start!
-      @thread = Thread.new do
-        EM.run do
-          cnf = VcrWs::Config.instance
-          EM::WebSocket.start(host: cnf.test_ws_address, port: cnf.test_ws_port, debug: true) do |ws|
-            ws.onopen do
-              handle_open(ws)
-            end
+      cnf = VcrWs::Config.instance
+      @thread = Thread.new(cnf.test_ws_address, cnf.test_ws_port) do |host, port|
+        Thread.handle_interrupt(RuntimeError => :never) do
+          # You can write resource allocation code safely.
+          Thread.handle_interrupt(RuntimeError => :immediate) do
+            EM.run do
+              puts "Starting VCR WebSocket server on ws://#{host}:#{port}"
+              EM::WebSocket.start(host:, port:) do |ws|
+                ws.onopen do
+                  handle_open(ws)
+                end
 
-            ws.onmessage do |message, _type|
-              handle_message(ws, message)
-            end
+                ws.onmessage do |message|
+                  receive_message(ws, message)
+                end
 
-            ws.onclose do
-              handle_close(ws)
-            end
+                ws.onclose do
+                  handle_close(ws)
+                end
 
-            ws.onerror do |error|
-              raise error
-              puts "Error: #{error}"
+                ws.onerror do |error|
+                  puts "VCR::Error: #{error.message}"
+                  puts error.backtrace
+                end
+              end
             end
           end
-
-          puts "WebSocket server started ws://#{cnf.test_ws_address}:#{cnf.test_ws_port}"
+        ensure
+          EM.stop if EM.reactor_running?
         end
       end.run
       sleep 3
@@ -45,56 +51,51 @@ module VcrWs
     end
 
     def handle_open(ws)
-      puts "Client connected"
+      @event_index = 0
       process_next_event(ws)
     end
 
-    def handle_message(ws, message)
-      current_event = @events[@event_index]
+    def handle_close(ws)
+      process_next_event(ws)
+    end
 
-      if current_event[:event] == :send
+    def receive_message(ws, message)
+      current_event = @events[@event_index]
+      if current_event[:event].to_sym == :client_send
         unless message == current_event[:data]
           raise VcrWs::Error, "Mismatch error: Expected #{current_event[:data]}, got #{message}"
         end
 
-        puts "Message matches expected data."
         @event_index += 1
         process_next_event(ws)
-
       else
-        puts "Unexpected message received: #{message}"
+        raise VcrWs::Error, "Unexpected message received: #{message}"
       end
     end
 
-    def handle_close(_ws)
-      puts "Client disconnected"
-    end
-
     def process_next_event(ws = 0)
-      return if @event_index >= @events.size
+      next_event = @events[@event_index]
 
-      current_event = @events[@event_index]
-      puts @events.inspect
-      puts "current_event"
-      puts current_event.inspect
+      return unless next_event
 
-      delay = calculate_delay(current_event[:timestamp])
+      delay = calculate_delay(next_event[:timestamp])
 
       EM.add_timer(delay) do
-        case current_event[:event]
+        case next_event[:event].to_sym
+        when :open
+          ws.send(next_event[:data]) if next_event[:data]
+          @event_index += 1
         when :message
-          ws.send(current_event[:data])
-          puts "Sent message: #{current_event[:data]}"
+          ws.send(next_event[:data]) if next_event[:data]
           @event_index += 1
           process_next_event(ws)
         when :close
-          puts "Closing connection"
+          ws.send(next_event[:data]) if next_event[:data]
           ws.close
-        when :send
-          puts "Waiting for client to send: #{current_event[:data]}"
+        when :client_send
+          # puts "Waiting for client to send: #{next_event[:data]}"
         else
-          puts "Unhandled event: #{current_event[:event]}"
-          @event_index += 1
+          raise VcrWs::Error, "Unhandled event: #{next_event[:event]}"
           process_next_event(ws)
         end
       end

@@ -29,7 +29,7 @@ class TestLogger
 end
 
 def start_echo_server(host, port)
-  Thread.new(host, port) do |host, port|
+  thread = Thread.new(host, port) do |host, port|
     Thread.handle_interrupt(RuntimeError => :never) do
       # You can write resource allocation code safely.
       Thread.handle_interrupt(RuntimeError => :immediate) do
@@ -38,15 +38,11 @@ def start_echo_server(host, port)
 
           EM::WebSocket.start(host: host, port: port) do |ws|
             ws.onopen do
-              puts "Client connected"
               ws.send("hello")
             end
 
             ws.onmessage do |message|
-              puts "Received message: #{message}"
-
               if message == "stop"
-                puts "STOPING"
                 ws.close
                 EM.stop
               else
@@ -59,11 +55,11 @@ def start_echo_server(host, port)
             end
 
             ws.onclose do
-              puts "Client disconnected"
+              # puts "echo: Client disconnected"
             end
 
             ws.onerror do |error|
-              puts "Error: #{error.message}"
+              puts "echo: Error: #{error.message}"
               puts error.backtrace
             end
           end
@@ -73,4 +69,6 @@ def start_echo_server(host, port)
       EM.stop if EM.reactor_running?
     end
   end.run
+  sleep 1
+  thread
 end

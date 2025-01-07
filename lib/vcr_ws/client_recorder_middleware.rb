@@ -41,7 +41,7 @@ module VcrWs
     end
 
     def send_message(message)
-      @recorder.record("send", message)
+      @recorder.record("client_send", message)
       @client.method(:send).super_method.call(message)
     end
 
