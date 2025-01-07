@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 module VcrWs
   class ActorWS
     def initialize(file_path)

@@ -1,4 +1,4 @@
-# frozen_string_literal: true
+
 
 require 'fileutils'
 
@@ -14,7 +14,7 @@ module VcrWs
     def record(event, data)
       line = { timestamp: Time.now.to_f, event: event }
       line[:data] = data if data
-      full_data = if File.exists?(@recorder_file)
+      full_data = if File.file?(@recorder_file)
         YAML.load_file(@recorder_file, symbolize_names: true)
       else
         []
