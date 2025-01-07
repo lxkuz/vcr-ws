@@ -61,18 +61,16 @@ module VcrWs
 
     def receive_message(ws, message)
       current_event = @events[@event_index]
-      if current_event[:event].to_sym == :client_send
-        unless message == current_event[:data]
-          raise VcrWs::Error, "Mismatch error: Expected #{current_event[:data]}, got #{message}"
-        end
-
-        @event_index += 1
-        process_next_event(ws)
-      else
-        raise VcrWs::Error, "Unexpected message received: #{message}"
+      raise VcrWs::Error, "Unexpected message received: #{message}" unless current_event[:event].to_sym == :client_send
+      unless message == current_event[:data]
+        raise VcrWs::Error, "Mismatch error: Expected #{current_event[:data]}, got #{message}"
       end
+
+      @event_index += 1
+      process_next_event(ws)
     end
 
+    # rubocop:disable Metrics/CyclomaticComplexity
     def process_next_event(ws = 0)
       next_event = @events[@event_index]
 
@@ -100,6 +98,7 @@ module VcrWs
         end
       end
     end
+    # rubocop:enable Metrics/CyclomaticComplexity
 
     def calculate_delay(timestamp)
       return 0 if @event_index.zero?

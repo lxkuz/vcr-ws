@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "rspec"
 require "faye/websocket"
 require "eventmachine"
@@ -80,7 +82,7 @@ RSpec.describe "General VCR test" do
     Timecop.travel(time)
   end
 
-  context 'when LIVE WS server is ON' do
+  context "when LIVE WS server is ON" do
     before(:each) do
       @thread = start_echo_server(host, echo_port)
     end
@@ -114,7 +116,6 @@ RSpec.describe "General VCR test" do
   end
 
   context "when VCR enabled and we try to use it" do
-
     before do
       # It takes 1 sec so I do it just to keep this timestamps equal
       sleep 1

@@ -1,0 +1,20 @@
+---
+- :timestamp: 1735693201
+  :event: open
+- :timestamp: 1735693201
+  :event: client_send
+  :data: test
+- :timestamp: 1735693201
+  :event: message
+  :data: hello
+- :timestamp: 1735693201
+  :event: message
+  :data: test
+- :timestamp: 1735693202
+  :event: message
+  :data: test 2
+- :timestamp: 1735693204
+  :event: client_send
+  :data: stop
+- :timestamp: 1735693204
+  :event: close
