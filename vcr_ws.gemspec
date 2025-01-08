@@ -13,7 +13,7 @@ Gem::Specification.new do |spec|
   spec.homepage = "https://github.com/lxkuz/vcr_ws"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.2.2"
-  spec.platform = 'ruby'
+  spec.platform = "ruby"
 
   # spec.metadata["allowed_push_host"] = "TODO: Set to your gem server 'https://example.com'"
 
